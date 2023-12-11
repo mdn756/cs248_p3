@@ -434,6 +434,77 @@ function compute_jacobian(end_effector) {
 
   let ndofs = dof_list.length;
   let J = math.zeros([2, ndofs]);
+  //I THINK end_effector is the Transformation object of one of our end effectors. for example, the Object with name: r_foot
+  //unpack all the parents
+  let columnVector = [0, 0, 1];
+  if (end_effector.name === "l_hand") {
+    let d0 = math.multiply(transform_list[0].dT, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
+    let d1 = math.multiply(transform_list[0].T, tranform_list[1].dT, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
+    let d2 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
+    let d3 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[5]._value, transform_list[6].dT, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
+    let d4 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].dT, transform_list[9]._value, columnVector);
+    J[0][0] = d0[0];
+    J[1][0] = d0[1];
+    J[0][1] = d1[0];
+    J[1][1] = d1[1];
+    J[0][2] = d2[0];
+    J[1][2] = d2[1];
+    J[0][3] = d3[0];
+    J[1][3] = d3[1];
+    J[0][4] = d4[0];
+    J[1][4] = d4[1];
+  }
+  else if (end_effector.name === "r_hand") {
+    let d0 = math.multiply(transform_list[0].dT, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
+    let d1 = math.multiply(transform_list[0].T, tranform_list[1].dT, transform_list[2].T, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
+    let d2 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
+    let d5 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[11]._value, transform_list[12].dT, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
+    let d6 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].dT, transform_list[15]._value, columnVector);
+    J[0][0] = d0[0];
+    J[1][0] = d0[1];
+    J[0][1] = d1[0];
+    J[1][1] = d1[1];
+    J[0][2] = d2[0];
+    J[1][2] = d2[1];
+    J[0][5] = d5[0];
+    J[1][5] = d5[1];
+    J[0][6] = d6[0];
+    J[1][6] = d6[1];
+  }
+  else if (end_effector.name === "l_foot") {
+    let d0 = math.multiply(transform_list[0].dT, tranform_list[1].T, transform_list[2].T, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
+    let d1 = math.multiply(transform_list[0].T, tranform_list[1].dT, transform_list[2].T, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
+    let d2 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
+    let d7 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[17]._value, transform_list[18].dT, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
+    let d8 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].dT, transform_list[21]._value, columnVector);
+    J[0][0] = d0[0];
+    J[1][0] = d0[1];
+    J[0][1] = d1[0];
+    J[1][1] = d1[1];
+    J[0][2] = d2[0];
+    J[1][2] = d2[1];
+    J[0][7] = d7[0];
+    J[1][7] = d7[1];
+    J[0][8] = d8[0];
+    J[1][8] = d8[1];
+  }
+  else if (end_effector.name === "r_foot") {
+    let d0 = math.multiply(transform_list[0].dT, tranform_list[1].T, transform_list[2].T, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
+    let d1 = math.multiply(transform_list[0].T, tranform_list[1].dT, transform_list[2].T, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
+    let d2 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
+    let d9 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[23]._value, transform_list[24].dT, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
+    let d10 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].dT, transform_list[27]._value, columnVector);
+    J[0][0] = d0[0];
+    J[1][0] = d0[1];
+    J[0][1] = d1[0];
+    J[1][1] = d1[1];
+    J[0][2] = d2[0];
+    J[1][2] = d2[1];
+    J[0][9] = d9[0];
+    J[1][9] = d9[1];
+    J[0][10] = d10[0];
+    J[1][10] = d10[1];
+  }
   return J;
 }
 
@@ -502,7 +573,7 @@ function setup_character() {
   transform_list.forEach((tr) => {
     tr.dependent_dofs = tr.parent
       ? new Set(tr.parent.dependent_dofs)
-      : new Set();
+      : new Set(); //inherit the parent dofs or create new set if no parents
     if (tr.num_dofs() > 0) {
       tr.dependent_dofs.add(tr);
     }
