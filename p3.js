@@ -140,6 +140,7 @@ function setup() {
   let lineK = new FloorObstacle(floor_h);
   obstacles.push(lineK);
   unit_test_J();
+  // IK_unit_test();
 }
 
 function reset_targets() {
@@ -560,6 +561,7 @@ function unit_test_J() {
     C_rh = forwardK(name_to_transform.r_hand);
     C_lf = forwardK(name_to_transform.l_foot);
     C_rf = forwardK(name_to_transform.r_foot);
+    // for every dof
     for (let j = 0; j < 11; j++) {
       //take q(j) and perturb it a tiny amount
       let q_perturb = [...q];
@@ -576,26 +578,26 @@ function unit_test_J() {
       //take the difference between original C and perturbed C
       //this difference becomes the jth column of the finite difference Jacobian
       for (let k = 0; k < 2; k++) {
-        J_fd_lh[k][j] = math.divide(math.subtract(C_lh[k], C_lh_perturb[k]),-.5*Math.PI/180); //difference and normalize
-        J_fd_rh[k][j] = math.divide(math.subtract(C_rh[k], C_rh_perturb[k]),-.5*Math.PI/180);
-        J_fd_lf[k][j] = math.divide(math.subtract(C_lf[k], C_lf_perturb[k]),-.5*Math.PI/180);
-        J_fd_rf[k][j] = math.divide(math.subtract(C_rf[k], C_rf_perturb[k]),-.5*Math.PI/180);  
+        J_fd_lh[k][j] = math.divide(math.subtract(C_lh[k], C_lh_perturb[k]),-.5*Math.PI/180)[0][0]; //difference and normalize
+        J_fd_rh[k][j] = math.divide(math.subtract(C_rh[k], C_rh_perturb[k]),-.5*Math.PI/180)[0][0];
+        J_fd_lf[k][j] = math.divide(math.subtract(C_lf[k], C_lf_perturb[k]),-.5*Math.PI/180)[0][0];
+        J_fd_rf[k][j] = math.divide(math.subtract(C_rf[k], C_rf_perturb[k]),-.5*Math.PI/180)[0][0];  
       }
           
     }
     //compare each FD jacobian (4) to each analytical Jacobian (4)
-    print('left hand')
-    print(J_lh)
-    print(J_fd_lh)
+    print('left hand');
+    print("analytical:\t"+J_lh[0]+J_lh[1]);
+    print("finite difference:\t"+J_fd_lh[0]+J_fd_lh[1]);
     print('right hand')
-    print(J_rh)
-    print(J_fd_rh)
+    print("analytical:\t"+J_rh[0]+J_rh[1]);
+    print("finite difference:\t"+J_fd_rh[0]+J_fd_rh[1]);
     print('left foot')
-    print(J_lf)
-    print(J_fd_lf)
+    print("analytical:\t"+J_lf[0]+J_lf[1]);
+    print("finite difference:\t"+J_fd_lf[0]+J_fd_lf[1]);
     print('right foot')
-    print(J_rf)
-    print(J_fd_rf)
+    print("analytical:\t"+J_rf[0]+J_rf[1]);
+    print("finite difference:\t"+J_fd_rf[0]+J_fd_rf[1]);
 
   }
 }
