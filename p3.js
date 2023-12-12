@@ -167,6 +167,7 @@ function set_joint_positions(q, dt) {
     let q_i = q[i];
     let jnt_i = dof_list[i];
     jnt_i.set_dof(q_i);
+    jnt_i.local_derivative();
   }
   // update the bone segments accordingly
   update_current_segments_and_collision(dt);
@@ -426,7 +427,6 @@ function transform_between(start, end) {
 
 
 
-// TODO: student code
 function compute_jacobian(end_effector) {
   // end_effector is a Transformation object
   // return the Jacobian matrix of the end_effector, a 2xN matrix
@@ -437,13 +437,15 @@ function compute_jacobian(end_effector) {
   let J = math.zeros([2, ndofs]);
   //I THINK end_effector is the Transformation object of one of our end effectors. for example, the Object with name: r_foot
   //unpack all the parents
-  let columnVector = [0, 0, 1];
+  let columnVector = [[0],[0],[1]];
+  
   if (end_effector.name === "l_hand") {
     let d0 = math.multiply(transform_list[0].dT, transform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
     let d1 = math.multiply(transform_list[0].T, transform_list[1].dT, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
     let d2 = math.multiply(transform_list[0].T, transform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
     let d3 = math.multiply(transform_list[0].T, transform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].dT, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
     let d4 = math.multiply(transform_list[0].T, transform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].dT, transform_list[9]._value, columnVector);
+    //print(d0);
     J[0][0] = d0[0];
     J[1][0] = d0[1];
     J[0][1] = d1[0];
@@ -510,7 +512,7 @@ function compute_jacobian(end_effector) {
 }
 function forwardK(end_effector) {
   let C = math.zeros([2, 1]);
-  let columnVector = [0, 0, 1];
+  let columnVector = [[0],[0],[1]];
   if (end_effector.name === "l_hand") {
     let d0 = math.multiply(transform_list[0].T, transform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
     C[0][0] = d0[0];
@@ -550,12 +552,13 @@ function rand_pose() {
 function unit_test_J() {
   let ndofs = dof_list.length;
   for (let i = 0; i < 3; i++) {
+    print('pose', i+1)
     q = rand_pose();
     let J_fd_lh = math.zeros([2, ndofs]);
     let J_fd_rh = math.zeros([2, ndofs]);
     let J_fd_lf = math.zeros([2, ndofs]);
     let J_fd_rf = math.zeros([2, ndofs]);
-    set_joint_positions(q, .01);
+    set_joint_positions(q, 0);
 
     // call compute_jacobian - this is the analytical
     J_lh = compute_jacobian(name_to_transform.l_hand);
@@ -568,30 +571,41 @@ function unit_test_J() {
     C_rf = forwardK(name_to_transform.r_foot);
     for (let j = 0; j < 11; j++) {
       //take q(j) and perturb it a tiny amount
-      let q_perturb = q;
+      let q_perturb = [...q];
       q_perturb[j] += .5*Math.PI/180;
-      set_joint_positions(q_perturb, .01);
+      set_joint_positions(q_perturb, 0);
 
       //compute C again with new perturbation. 4 of them for each ee
       C_lh_perturb = forwardK(name_to_transform.l_hand);
       C_rh_perturb = forwardK(name_to_transform.r_hand);
       C_lf_perturb = forwardK(name_to_transform.l_foot);
       C_rf_perturb = forwardK(name_to_transform.r_foot);
-      set_joint_positions(q, .01); //reset joints
+      set_joint_positions(q, 0); //reset joints
 
       //take the difference between original C and perturbed C
       //this difference becomes the jth column of the finite difference Jacobian
       for (let k = 0; k < 2; k++) {
-        J_fd_lh[k][j] = math.subtract(C_lh[k], C_lh_perturb[k]);
-        J_fd_rh[k][j] = math.subtract(C_rh[k], C_rh_perturb[k]);
-        J_fd_lf[k][j] = math.subtract(C_lf[k], C_lf_perturb[k]);
-        J_fd_rf[k][j] = math.subtract(C_rf[k], C_rf_perturb[k]);  
+        J_fd_lh[k][j] = math.divide(math.subtract(C_lh[k], C_lh_perturb[k]),-.5*Math.PI/180); //difference and normalize
+        J_fd_rh[k][j] = math.divide(math.subtract(C_rh[k], C_rh_perturb[k]),-.5*Math.PI/180);
+        J_fd_lf[k][j] = math.divide(math.subtract(C_lf[k], C_lf_perturb[k]),-.5*Math.PI/180);
+        J_fd_rf[k][j] = math.divide(math.subtract(C_rf[k], C_rf_perturb[k]),-.5*Math.PI/180);  
       }
           
     }
     //compare each FD jacobian (4) to each analytical Jacobian (4)
+    print('left hand')
     print(J_lh)
     print(J_fd_lh)
+    print('right hand')
+    print(J_rh)
+    print(J_fd_rh)
+    print('left foot')
+    print(J_lf)
+    print(J_fd_lf)
+    print('right foot')
+    print(J_rf)
+    print(J_fd_rf)
+
   }
 }
 
