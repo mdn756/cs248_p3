@@ -153,14 +153,6 @@ function reset_targets() {
   }
 }
 
-// TODO: student code
-function take_IK_step(end_effectors, targets) {
-  // targets being a list of 2-arrays
-  // end_effectors being a list of Transformation objects
-  // return the gradient of the IK residual, a 1d array of length ndofs
-  let g = math.zeros([q.length]);
-  return g;
-}
 
 function set_joint_positions(q, dt) {
   for (let i = 0; i < q.length; i++) {
