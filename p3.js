@@ -18,6 +18,7 @@ let init_offset_com_2_base;
 let total_mass; // total mass of the rods, constant, only updated once before each physics sim stage
 let I; // moment of inertia around CoM, constant, only updated once before each physics sim stage
 const density = 5.0; // density of the bone segments, kg/m
+let last_timestep_positions;
 
 let obstacles = []; // list of Obstacle objects, in starter code there is only one floor
 
@@ -51,6 +52,15 @@ class Segment {
   get_global_com_xy() {
     return math.multiply(0.5, math.add(this.s, this.e));
   }
+  get_length() {
+		return this.length;
+	}
+	get_mass() {
+		return this.m;
+	}
+	get_inertia() {
+		return this.I_com;
+	}
 
   draw() {
     push();
@@ -168,6 +178,7 @@ function set_joint_positions(q, dt) {
 
 function update_current_segments_and_collision(dt) {
   bone_segments = [];
+  
 
   transform_list.forEach((tr) => {
     // excluding all base_ transforms
@@ -180,6 +191,7 @@ function update_current_segments_and_collision(dt) {
 
   if (collision_candidates == null) {
     collision_candidates = new CollisionCandidates(bone_segments);
+    last_timestep_positions = new CollisionCandidates(bone_segments);
   } else {
     collision_candidates.update_points(bone_segments, dt);
   }
@@ -193,9 +205,22 @@ function get_init_CoM_xy(return_total_mass) {
   // TODO: STUDENT CODE BEGIN
   // replace this with your code
 
+  // TODO: STUDENT CODE BEGIN
+  // replace this with your code
   let CoM = [0.0, 0.0];
-  let total_mass = 1.0;
-
+	let total_mass = 0.0;
+	for (let bone of bone_segments) {
+		let scalar = bone.get_length() * bone.get_mass();
+		let midpoint = bone.get_global_com_xy();
+		let product = math.multiply(scalar, midpoint);
+		CoM = math.add(CoM, product);
+		total_mass += bone.get_mass();
+	}
+	let total_mass_factor = 1.0 / total_mass;
+	CoM = math.multiply(total_mass_factor, CoM);
+	// Sum Length * mass * COM of each rod
+	// Divide it by the total mass of the rods
+  // STUDENT CODE END
   // STUDENT CODE END
 
   if (return_total_mass) {
@@ -213,8 +238,16 @@ function get_moment_of_inertia_around_CoM(com) {
   // TODO: STUDENT CODE BEGIN
   // replace this with your code
 
-  let I_total = 1.0;
-
+  let I_total = 0.0;
+	// Get individual inertias
+	// Parallel Axis Theorem around CoM
+	// Add their inertias
+	for (let bone of bone_segments) {
+		let d = math.norm(math.subtract(bone.get_global_com_xy(), com));
+		let d_square = d * d;
+		let inertia = d_square + bone.get_inertia();
+		I_total += inertia;
+	}
   // STUDENT CODE END
 
   return I_total;
@@ -279,6 +312,7 @@ function terminate_phys_state() {
 function set_q_from_phys_state(dt) {
   // set base pos according to CoM pos
   // base velocities are ignored since it's not used in IK mode or visualization
+  last_timestep_positions = new CollisionCandidates(bone_segments);
   let a = CoM_xya[2];
   let rot_mat = [
     [math.cos(a), -math.sin(a)],
@@ -304,7 +338,30 @@ function take_physics_step(fx, fy, tau) {
     // fx, fy, tau are external forces and torque (i.e. gravity) excluding collision
     // add your collision forces to fx, fy, tau
     // then integrate the equations of motion
-
+		// let floor_y = windowHeight * 0.5 + (100.0*(h+0.1));
+		for (let i = 0; i < collision_candidates.length(); i++){
+			let p = collision_candidates.get_p(i);
+			// Check if close to floor
+			if (p[1] >= (floor_h - 0.05)) {
+				// Find penalty force
+				let last_p = last_timestep_positions.get_p(i);
+				fx += -0.01*(p[0]-last_p[0]);
+				fy += -10.0*(p[1]-0.05);
+				// Find torque
+				let p_three = [p[0], p[1], 0.0];
+				let com_xy = [CoM_xya[0], CoM_xya[1], 0.0];
+				let fk = [fx, fy, 0.0];
+				let moment_arm = math.subtract(com_xy, p_three);
+				// Cross product force and moment arm to get torque
+				let tau_k = math.norm(math.cross(fk, moment_arm));
+				// Damping the torque
+				tau += (tau_k * 0.01);
+			}
+		}
+		
+		let a = [fx/total_mass, fy/total_mass, tau/I];
+		// update d_CoM_xya -- the velocity using the acceleration
+		d_CoM_xya = math.add(d_CoM_xya, math.multiply(dt, a));
     // STUDENT CODE END
 
     CoM_xya = math.add(CoM_xya, math.multiply(dt, d_CoM_xya));
@@ -598,7 +655,6 @@ function unit_test_J() {
     print('right foot')
     print("analytical:\t"+J_rf[0]+J_rf[1]);
     print("finite difference:\t"+J_fd_rf[0]+J_fd_rf[1]);
-
   }
 }
 
