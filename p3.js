@@ -441,8 +441,8 @@ function compute_jacobian(end_effector) {
     let d0 = math.multiply(transform_list[0].dT, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
     let d1 = math.multiply(transform_list[0].T, tranform_list[1].dT, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
     let d2 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
-    let d3 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[5]._value, transform_list[6].dT, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
-    let d4 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].dT, transform_list[9]._value, columnVector);
+    let d3 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].dT, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
+    let d4 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].dT, transform_list[9]._value, columnVector);
     J[0][0] = d0[0];
     J[1][0] = d0[1];
     J[0][1] = d1[0];
@@ -458,8 +458,8 @@ function compute_jacobian(end_effector) {
     let d0 = math.multiply(transform_list[0].dT, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
     let d1 = math.multiply(transform_list[0].T, tranform_list[1].dT, transform_list[2].T, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
     let d2 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
-    let d5 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[11]._value, transform_list[12].dT, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
-    let d6 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].dT, transform_list[15]._value, columnVector);
+    let d5 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[11]._value, transform_list[12].dT, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
+    let d6 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].dT, transform_list[15]._value, columnVector);
     J[0][0] = d0[0];
     J[1][0] = d0[1];
     J[0][1] = d1[0];
@@ -475,8 +475,8 @@ function compute_jacobian(end_effector) {
     let d0 = math.multiply(transform_list[0].dT, tranform_list[1].T, transform_list[2].T, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
     let d1 = math.multiply(transform_list[0].T, tranform_list[1].dT, transform_list[2].T, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
     let d2 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
-    let d7 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[17]._value, transform_list[18].dT, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
-    let d8 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].dT, transform_list[21]._value, columnVector);
+    let d7 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[17]._value, transform_list[18].dT, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
+    let d8 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].dT, transform_list[21]._value, columnVector);
     J[0][0] = d0[0];
     J[1][0] = d0[1];
     J[0][1] = d1[0];
@@ -492,8 +492,8 @@ function compute_jacobian(end_effector) {
     let d0 = math.multiply(transform_list[0].dT, tranform_list[1].T, transform_list[2].T, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
     let d1 = math.multiply(transform_list[0].T, tranform_list[1].dT, transform_list[2].T, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
     let d2 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
-    let d9 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[23]._value, transform_list[24].dT, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
-    let d10 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].dT, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].dT, transform_list[27]._value, columnVector);
+    let d9 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[23]._value, transform_list[24].dT, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
+    let d10 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].dT, transform_list[27]._value, columnVector);
     J[0][0] = d0[0];
     J[1][0] = d0[1];
     J[0][1] = d1[0];
@@ -506,6 +506,67 @@ function compute_jacobian(end_effector) {
     J[1][10] = d10[1];
   }
   return J;
+}
+function forwardK(end_effector) {
+  let C = math.zeros([2, 1]);
+  let columnVector = [0, 0, 1];
+  if (end_effector.name === "l_hand") {
+    let d0 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[5]._value, transform_list[6].T, transform_list[7]._value, transform_list[8].T, transform_list[9]._value, columnVector);
+    C[0][0] = d0[0];
+    C[1][0] = d0[1];
+  }
+  else if (end_effector.name === "r_hand") {
+    let d0 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[3]._value, transform_list[11]._value, transform_list[12].T, transform_list[13]._value, transform_list[14].T, transform_list[15]._value, columnVector);
+    C[0][0] = d0[0];
+    C[1][0] = d0[1];
+  }
+  else if (end_effector.name === "l_foot") {
+    let d0 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[17]._value, transform_list[18].T, transform_list[19]._value, transform_list[20].T, transform_list[21]._value, columnVector);
+    C[0][0] = d0[0];
+    C[1][0] = d0[1];
+
+  }
+  else if (end_effector.name === "r_foot") {
+    let d0 = math.multiply(transform_list[0].T, tranform_list[1].T, transform_list[2].T, transform_list[23]._value, transform_list[24].T, transform_list[25]._value, transform_list[26].T, transform_list[27]._value, columnVector);
+    C[0][0] = d0[0];
+    C[1][0] = d0[1];
+  }
+  return C;
+}
+function rand_pose() {
+  // Random translation values for the first 2 degrees of freedom
+  const translationDofs = Array.from({ length: 2 }, () => Math.random() * 10);
+
+  // Random rotation values for the remaining 9 degrees of freedom in radians
+  const rotationDofs = Array.from({ length: 9 }, () => (Math.random() * 360 * Math.PI) / 180);
+
+  // Combine translation and rotation into a single pose array
+  const pose = [...translationDofs, ...rotationDofs];
+
+  return pose;
+}
+function unit_test_J() {
+  for (let i = 0; i < 3; i++) {
+    q = rand_pose();
+    set_joint_positions(q, .01);
+
+    // call compute_jacobian - this is the analytical
+    J_lh = compute_jacobian(name_to_transform.l_hand);
+    J_rh = compute_jacobian(name_to_transform.r_hand);
+    J_lf = compute_jacobian(name_to_transform.l_foot);
+    J_rf = compute_jacobian(name_to_transform.r_foot);
+    C_lh = forwardK(name_to_transform.l_hand);
+    C_rh = forwardK(name_to_transform.r_hand);
+    C_lf = forwardK(name_to_transform.l_foot);
+    C_rf = forwardK(name_to_transform.r_foot);
+    for (let j = 0; j < 11; j++) {
+      //take q(j) and perturb it a tiny amount
+      //compute C again with new perturbation. 4 of them for each ee
+      //take the difference between original C and perturbed C
+      //this difference becomes the jth column of the finite difference Jacobian
+      //compare each FD jacobian (4) to each analytical Jacobian (4)
+    }
+  }
 }
 
 function draw_character() {
