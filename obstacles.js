@@ -102,6 +102,40 @@ class Obstacle {
       this.color = c;
     }
   }
+///////////////////////////////////////
+// Axis-Aligned BOX OBSTACLE
+///////////////////////////////////////
+class BoxObstacle extends Obstacle {
+
+	/** Rect in RADIUS mode
+	 * @param {p5.Vector} center Center of box.
+	 * @param {number} bx Half-width in X
+	 * @param {number} by Half-width in Y
+	 */
+	constructor(center, bx, by) {
+		super();
+		this.center = center;
+		this.bx = bx;
+		this.by = by;
+	}
+
+	draw() {
+		push();
+		rectMode(RADIUS);
+		if (this.signMultiplier > 0) {
+      strokeWeight(0);
+			fill(this.color);
+			rect(this.center.x, this.center.y, this.bx*0.2, this.by*0.2); // RADIUS MODE
+		}
+		pop();
+	}
+
+	distance(p) {
+		let v = p5.Vector.sub(p, this.center); // p-c
+		return this.signMultiplier * SDF.sdBox(v, vec2(this.bx, this.by));
+	}
+}
+
   ///////////////////////////////////////
 // CIRCLE OBSTACLE
 ///////////////////////////////////////
@@ -117,9 +151,11 @@ class CircleObstacle extends Obstacle {
 
 	draw() {
 		// if (this.signMultiplier > 0) {
+      push();
       strokeWeight(0);
 			fill(this.color);
-			circle(this.center.x, this.center.y, this.radius); // RADIUS MODE
+			circle(this.center.x, this.center.y, this.radius*1.7); // RADIUS MODE
+      pop();
 		// }
 	}
   notifyOfCollision() {
@@ -159,7 +195,7 @@ class CircleObstacle extends Obstacle {
     }
   
     distance(p) {
-      let result = this.signMultiplier * (this.h - p[1]);
+      let result = this.signMultiplier * (this.h - p.y);
       return result;
     }
   }
@@ -204,6 +240,16 @@ class CircleObstacle extends Obstacle {
     static sdCircle(p, r) {
       return length(p) - r;
     }
+    	/**
+     * SDF of a box at origin
+     * @param {p5.Vector} p Evaluation point
+     * @param {p5.Vector} b Half widths in X & Y
+     * @return {number}   SDF value
+     */
+    static sdBox(p, b) {
+      let d = sub(absv2(p), b);
+      return length(maxv2(d, 0.0)) + min(max(d.x, d.y), 0.0);
+    } 
   }
   
 /////////////////////////////////////////////////////////////////
