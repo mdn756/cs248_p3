@@ -152,12 +152,12 @@ function setup() {
   // TODO: ADD YOUR MANY WONDERFUL OBSTACLES/TERRAINS
   let lineK = new FloorObstacle(floor_h);
   obstacles.push(lineK);
-  let circleK = new CircleObstacle(createVector(floor_h*0.02-floor_h, floor_h*0.75), floor_h*0.5);
-  circleK.setColor("black");
-  let rectK = new BoxObstacle(createVector(floor_h*0.002+floor_h, floor_h*0.75), floor_h, floor_h);
-  rectK.setColor("black");
-  obstacles.push(circleK);
-  obstacles.push(rectK);
+  //let circleK = new CircleObstacle(createVector(floor_h*0.02-floor_h, floor_h*0.75), floor_h*0.5);
+  //circleK.setColor("black");
+  //let rectK = new BoxObstacle(createVector(floor_h*0.002+floor_h, floor_h*0.75), floor_h, floor_h);
+  //rectK.setColor("black");
+  //obstacles.push(circleK);
+  //obstacles.push(rectK);
 
 
   // unit_test_J();
@@ -374,20 +374,25 @@ function take_physics_step(fx, fy, tau) {
         let p = collision_candidates.get_p(i);
         // Check if close to floor
         dist_sdf = distanceO(p);
-        if (dist_sdf[0] < 0.1) {
+        if (dist_sdf[0] < 0.01) {
           // Find penalty force
           let last_p = last_timestep_positions.get_p(i);
-          fx += -0.001*(p[0]-last_p[0]);
-          fy += -.80*(p[1]-0.05);
+          fx += -8*width/3072*(p[0]-last_p[0]);
+          fy += -8*height/1475*(p[1]-0.05);
           // Find torque
           let p_three = [p[0], p[1], 0.0];
           let com_xy = [CoM_xya[0], CoM_xya[1], 0.0];
           let fk = [fx, fy, 0.0];
-          let moment_arm = math.subtract(com_xy, p_three);
+          //let moment_arm = math.subtract(com_xy, p_three);
+          moment_arm_x = p[0]-CoM_xya[0];
+          moment_arm_y = p[1]-CoM_xya[1];
+          tau_k = moment_arm_x*fy + moment_arm_y*fx;
           // Cross product force and moment arm to get torque
-          let tau_k = math.norm(math.cross(fk, moment_arm));
+          //let tau_k = math.norm(math.cross(fk, moment_arm));
           // Damping the torque
-          tau += (tau_k * 0.0001);
+          tau += (tau_k * 0.05);
+         
+          
         }  
       }
       
