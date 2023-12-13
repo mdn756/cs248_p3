@@ -31,6 +31,8 @@ let x_offset_draw, y_offset_draw;
 
 let physics_on = false;
 let physics_timer = -1;
+let jump = false;
+let jumped = false;
 const physics_duration = 5; // seconds
 
 let dragging_idx = -1;
@@ -353,10 +355,17 @@ function distanceO(p) {
 
 function take_physics_step(fx, fy, tau) {
     // fx, fy, tau are scalars, pass by value
-
+    let jumpForce = 0;
     let substep = 10;
     let dt = 1.0 / (substep * FRAMERATE);
-  
+    if (jump) {
+      jumpForce = 5000;
+      print('hi')
+      d_CoM_xya[1] -= dt * (jumpForce / total_mass);
+      jump = false;
+      jumped = true;
+    }
+    
     for (let i = 0; i < substep; i++) {
       // TODO: STUDENT CODE BEGIN
   
@@ -786,8 +795,12 @@ function setup_character() {
 function keyPressed() {
   if (keyCode == ENTER && !physics_on) {
     physics_on = true;
+    jumped = false;
     init_phys_state();
     physics_timer = physics_duration * FRAMERATE;
+  }
+  if (keyCode == 32 && physics_on && !jumped) {
+    jump = true;
   }
 }
 
