@@ -151,7 +151,7 @@ function setup() {
   // TODO: ADD YOUR MANY WONDERFUL OBSTACLES/TERRAINS
   let lineK = new FloorObstacle(floor_h);
   obstacles.push(lineK);
-  let circleK = new CircleObstacle(createVector(floor_h, floor_h*0.2), floor_h);
+  let circleK = new CircleObstacle(createVector(floor_h*0.02, floor_h), floor_h);
   circleK.setColor("red");
   // circleK.setStrokeColor(color(240, 106, 88));
   // circleK.setCOR(0.85);
@@ -369,60 +369,33 @@ function take_physics_step(fx, fy, tau) {
     for (let i = 0; i < substep; i++) {
       // TODO: STUDENT CODE BEGIN
   
-      // Add your collision forces to fx, fy, tau here (not implemented in this example)
-  
-      // External forces and torques (gravity in this example)
-      let external_force = [fx, fy];
-      let external_torque = tau;
-  
-      // Update linear and angular velocities
-      d_CoM_xya[0] += dt * (external_force[0] / total_mass); // Update linear velocity in x
-      d_CoM_xya[1] += dt * (external_force[1] / total_mass); // Update linear velocity in y
-      d_CoM_xya[2] += dt * (external_torque / I); // Update angular velocity
-  
-      // Update position and orientation using Euler integration
-      CoM_xya[0] += dt * d_CoM_xya[0]; // Update x position
-      CoM_xya[1] += dt * d_CoM_xya[1]; // Update y position
-      CoM_xya[2] += dt * d_CoM_xya[2]; // Update rotation
-  
-      let floor_height = floor_h;
-      for (let j = 0; j < bone_segments.length; j++) {
-        let segment = bone_segments[j];
-        let dist = distanceO(segment.e[1]);
-  
-        // Check if the end points of the segment cross the ground plane
-        if (dist <= 0.1) {
-        // if (segment.e[1] > floor_height) {
-          // Apply a penalty force to simulate a spring force
-          let penetration = segment.e[1] - floor_height;
-          let spring_force = 1000.0 * penetration; // Adjust the spring constant as needed
-  
-          // Update linear velocity in y for the segment's CoM
-          d_CoM_xya[1] -= dt * (spring_force / total_mass);
-          // Calculate lever arm (distance from CoM to the line of action of the force)
-      let lever_arm = segment.get_global_com_xy()[0] - CoM_xya[0];
-  
-      // Calculate torque
-      let torque = spring_force * lever_arm;
-  
-      // Update angular velocity
-      d_CoM_xya[2] -= dt * (torque / I);
-        }
-  
-        if (segment.s[1] > floor_height) {
-          let penetration = segment.s[1] - floor_height;
-          let spring_force = 1000.0 * penetration;
-          d_CoM_xya[1] -= dt * (spring_force / total_mass);
-          // Calculate lever arm (distance from CoM to the line of action of the force)
-      let lever_arm = segment.get_global_com_xy()[0] - CoM_xya[0];
-  
-      // Calculate torque
-      let torque = spring_force * lever_arm;
-  
-      // Update angular velocity
-      d_CoM_xya[2] -= dt * (torque / I);
+      for (let i = 0; i < collision_candidates.length(); i++){
+        let p = collision_candidates.get_p(i);
+        // Check if close to floor
+        dist_sdf = distanceO(p);
+        // print("dist: "+dist);
+        if (dist_sdf[0] < -0.85) {
+          // Find penalty force
+          let last_p = last_timestep_positions.get_p(i);
+          fx += -0.01*(p[0]-last_p[0]);
+          fy += -10.0*(p[1]-0.05);
+          // Find torque
+          let p_three = [p[0], p[1], 0.0];
+          let com_xy = [CoM_xya[0], CoM_xya[1], 0.0];
+          let fk = [fx, fy, 0.0];
+          let moment_arm = math.subtract(com_xy, p_three);
+          // Cross product force and moment arm to get torque
+          let tau_k = math.norm(math.cross(fk, moment_arm));
+          // Damping the torque
+          tau += (tau_k * 0.01);
         }
       }
+      
+      let a = [fx/total_mass, fy/total_mass, tau/I];
+      // update d_CoM_xya -- the velocity using the acceleration
+      d_CoM_xya = math.add(d_CoM_xya, math.multiply(dt, a));
+      CoM_xya = math.add(CoM_xya, math.multiply(dt, d_CoM_xya));
+
 
     set_q_from_phys_state(dt);
   }
