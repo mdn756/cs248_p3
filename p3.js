@@ -1,5 +1,7 @@
 // We'll use math.js for matrix operations in JavaScript
 // Include math.js in your Processing project
+// Max Nee
+// Sarah Teaw
 
 const FRAMERATE = 30;
 const floor_h = 2.0; // floor height, note that gravity is reversed (positive y is down)
@@ -19,6 +21,7 @@ let total_mass; // total mass of the rods, constant, only updated once before ea
 let I; // moment of inertia around CoM, constant, only updated once before each physics sim stage
 const density = 5.0; // density of the bone segments, kg/m
 let last_timestep_positions;
+let num_tries = 0;
 
 let obstacles = []; // list of Obstacle objects, in starter code there is only one floor
 
@@ -152,12 +155,12 @@ function setup() {
   // TODO: ADD YOUR MANY WONDERFUL OBSTACLES/TERRAINS
   let lineK = new FloorObstacle(floor_h);
   obstacles.push(lineK);
-  //let circleK = new CircleObstacle(createVector(floor_h*0.02-floor_h, floor_h*0.75), floor_h*0.5);
-  //circleK.setColor("black");
-  //let rectK = new BoxObstacle(createVector(floor_h*0.002+floor_h, floor_h*0.75), floor_h, floor_h);
-  //rectK.setColor("black");
-  //obstacles.push(circleK);
-  //obstacles.push(rectK);
+  let circleK = new CircleObstacle(createVector(floor_h*0.02-floor_h, floor_h*0.75), floor_h*0.5);
+  circleK.setColor("black");
+  let rectK = new BoxObstacle(createVector(floor_h*0.002+floor_h, floor_h*0.75), floor_h*0.25, floor_h*0.25);
+  rectK.setColor("black");
+  obstacles.push(circleK);
+  obstacles.push(rectK);
 
 
   // unit_test_J();
@@ -285,14 +288,14 @@ function init_phys_state() {
       let p = collision_candidates.get_p(i);
       collision_output = collisionCheck(p, obstacles);
       if (collision_output[0] > 0) {
-        in_collision = true;
-        base_correction = math.multiply(
-          collision_output[0],
-          collision_output[1]
-        );
-        q[0] += base_correction[0];
-        q[1] += base_correction[1];
-        set_joint_positions(q, 0);
+        // in_collision = true;
+        // base_correction = math.multiply(
+        //   collision_output[0],
+        //   collision_output[1]
+        // );
+        // q[0] += base_correction[0];
+        // q[1] += base_correction[1];
+        // set_joint_positions(q, 0);
       }
     }
     if (!in_collision) {
@@ -374,7 +377,7 @@ function take_physics_step(fx, fy, tau) {
         let p = collision_candidates.get_p(i);
         // Check if close to floor
         dist_sdf = distanceO(p);
-        if (dist_sdf[0] < 0.01) {
+        if (dist_sdf[0] < 0.001) {
           // Find penalty force
           let last_p = last_timestep_positions.get_p(i);
           fx += -8*width/3072*(p[0]-last_p[0]);
@@ -424,6 +427,7 @@ function draw() {
     fill(0, 0, 0);
     textSize(0.15);
     text("Physics " + str(physics_timer), text_x, text_y);
+    text("Score: " + str(num_tries), text_x, text_y + 0.15);
     pop();
 
     reset_targets();
@@ -438,6 +442,7 @@ function draw() {
     fill(0, 0, 0);
     textSize(0.15);
     text("Kinematics " + str(remaining_drags), text_x, text_y);
+    text("Score: " + str(num_tries), text_x, text_y + 0.15);
     pop();
 
     // let g_collision = math.zeros([q.length]);
@@ -773,6 +778,7 @@ function setup_character() {
 
 function keyPressed() {
   if (keyCode == ENTER && !physics_on) {
+    num_tries+=1;
     physics_on = true;
     jumped = false;
     init_phys_state();

@@ -125,7 +125,7 @@ class BoxObstacle extends Obstacle {
 		if (this.signMultiplier > 0) {
       strokeWeight(0);
 			fill(this.color);
-			rect(this.center.x, this.center.y, this.bx*0.2, this.by*0.2); // RADIUS MODE
+			rect(this.center.x, this.center.y, this.bx, this.by); // RADIUS MODE
 		}
 		pop();
 	}
@@ -189,8 +189,8 @@ class CircleObstacle extends Obstacle {
     draw() {
       push();
       stroke(0, 0, 0);
-      strokeWeight(0.1);
-      line(-50, this.h, 50, this.h);
+      strokeWeight(.5);
+      line(-50, this.h*1.1, 50, this.h*1.1);
       pop();
     }
   
