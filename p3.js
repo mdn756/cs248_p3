@@ -209,19 +209,17 @@ function get_init_CoM_xy(return_total_mass) {
   // replace this with your code
   let CoM = [0.0, 0.0];
 	let total_mass = 0.0;
-	for (let bone of bone_segments) {
-		let scalar = bone.get_length() * bone.get_mass();
-		let midpoint = bone.get_global_com_xy();
-		let product = math.multiply(scalar, midpoint);
-		CoM = math.add(CoM, product);
-		total_mass += bone.get_mass();
-	}
-	let total_mass_factor = 1.0 / total_mass;
-	CoM = math.multiply(total_mass_factor, CoM);
-	// Sum Length * mass * COM of each rod
-	// Divide it by the total mass of the rods
-  // STUDENT CODE END
-  // STUDENT CODE END
+	for (let i = 0; i < bone_segments.length; i++) {
+    let segment = bone_segments[i];
+    let segment_CoM = segment.get_global_com_xy();
+    total_mass += segment.m;
+    CoM[0] += segment.m * segment_CoM[0];
+    CoM[1] += segment.m * segment_CoM[1];
+  }
+	//normalize
+  CoM[0] /= total_mass;
+  CoM[1] /= total_mass;
+
 
   if (return_total_mass) {
     return [CoM, total_mass];
