@@ -154,7 +154,7 @@ class CircleObstacle extends Obstacle {
       push();
       strokeWeight(0);
 			fill(this.color);
-			circle(this.center.x, this.center.y, this.radius*1.7); // RADIUS MODE
+			circle(this.center.x, this.center.y, this.radius*1.3); // RADIUS MODE
       pop();
 		// }
 	}

@@ -123,11 +123,12 @@ class CollisionCandidates {
   }
 }
 
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   x_offset_draw = windowWidth * 0.5;
   y_offset_draw = windowHeight * 0.5;
-  background(255);
+  bgImg = loadImage('background.jpg');
 
   setup_character();
 
@@ -151,15 +152,16 @@ function setup() {
   // TODO: ADD YOUR MANY WONDERFUL OBSTACLES/TERRAINS
   let lineK = new FloorObstacle(floor_h);
   obstacles.push(lineK);
-  let circleK = new CircleObstacle(createVector(floor_h*0.02, floor_h), floor_h);
-  circleK.setColor("red");
-  // circleK.setStrokeColor(color(240, 106, 88));
-  // circleK.setCOR(0.85);
-  //circleK.setEnergy(500); //energy modeled as just adding the unit normal multiplied by some scalar
+  let circleK = new CircleObstacle(createVector(floor_h*0.02-floor_h, floor_h*0.75), floor_h*0.5);
+  circleK.setColor("black");
+  let rectK = new BoxObstacle(createVector(floor_h*0.002+floor_h, floor_h*0.75), floor_h, floor_h);
+  rectK.setColor("black");
   obstacles.push(circleK);
+  obstacles.push(rectK);
 
-  unit_test_J();
-  IK_unit_test();
+
+  // unit_test_J();
+  // IK_unit_test();
 }
 
 function reset_targets() {
@@ -360,7 +362,6 @@ function take_physics_step(fx, fy, tau) {
     let dt = 1.0 / (substep * FRAMERATE);
     if (jump) {
       jumpForce = 5000;
-      print('hi')
       d_CoM_xya[1] -= dt * (jumpForce / total_mass);
       jump = false;
       jumped = true;
@@ -373,12 +374,11 @@ function take_physics_step(fx, fy, tau) {
         let p = collision_candidates.get_p(i);
         // Check if close to floor
         dist_sdf = distanceO(p);
-        // print("dist: "+dist);
-        if (dist_sdf[0] < -0.85) {
+        if (dist_sdf[0] < 0.1) {
           // Find penalty force
           let last_p = last_timestep_positions.get_p(i);
-          fx += -0.01*(p[0]-last_p[0]);
-          fy += -10.0*(p[1]-0.05);
+          fx += -0.001*(p[0]-last_p[0]);
+          fy += -.80*(p[1]-0.05);
           // Find torque
           let p_three = [p[0], p[1], 0.0];
           let com_xy = [CoM_xya[0], CoM_xya[1], 0.0];
@@ -387,8 +387,8 @@ function take_physics_step(fx, fy, tau) {
           // Cross product force and moment arm to get torque
           let tau_k = math.norm(math.cross(fk, moment_arm));
           // Damping the torque
-          tau += (tau_k * 0.01);
-        }
+          tau += (tau_k * 0.0001);
+        }  
       }
       
       let a = [fx/total_mass, fy/total_mass, tau/I];
@@ -403,9 +403,10 @@ function take_physics_step(fx, fy, tau) {
 
 function draw() {
   clear();
+  image(bgImg, 0, 0, windowWidth, windowHeight);
+
   translate(x_offset_draw, y_offset_draw);
   scale(g_s);
-  background(255);
 
   text_x = (-x_offset_draw * 0.8) / g_s;
   text_y = (-y_offset_draw * 0.8) / g_s;
