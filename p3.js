@@ -368,9 +368,11 @@ function take_physics_step(fx, fy, tau) {
       let floor_height = floor_h;
       for (let j = 0; j < bone_segments.length; j++) {
         let segment = bone_segments[j];
+        let dist = distanceO(segment.e[1]);
   
         // Check if the end points of the segment cross the ground plane
-        if (segment.e[1] > floor_height) {
+        if (dist <= 0.1) {
+        // if (segment.e[1] > floor_height) {
           // Apply a penalty force to simulate a spring force
           let penetration = segment.e[1] - floor_height;
           let spring_force = 1000.0 * penetration; // Adjust the spring constant as needed
