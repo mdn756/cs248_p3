@@ -149,8 +149,15 @@ function setup() {
   // TODO: ADD YOUR MANY WONDERFUL OBSTACLES/TERRAINS
   let lineK = new FloorObstacle(floor_h);
   obstacles.push(lineK);
+  let circleK = new CircleObstacle(createVector(floor_h, floor_h*0.2), floor_h);
+  circleK.setColor("red");
+  // circleK.setStrokeColor(color(240, 106, 88));
+  // circleK.setCOR(0.85);
+  //circleK.setEnergy(500); //energy modeled as just adding the unit normal multiplied by some scalar
+  obstacles.push(circleK);
+
   unit_test_J();
-  // IK_unit_test();
+  IK_unit_test();
 }
 
 function reset_targets() {
@@ -330,6 +337,20 @@ function set_q_from_phys_state(dt) {
   set_joint_positions(q, dt);
 }
 
+/** SDF of all scene obstacles.
+ * @param {p5.Vector} p 2D position to query SDF at.
+ * @return {number,object} [d,o] Distance, d, to closest obstacle, o.
+ */
+function distanceO(p) {
+	let minDistO = [Infinity, this];
+  let pvec = createVector(p[0],p[1]);
+	for (let i = 0; i < obstacles.length; i++) {
+		const doi = obstacles[i].distanceO(pvec);
+		minDistO = SDF.opUnion(minDistO, doi); // [min(d1,d2), closestObstacle]
+	}
+	return minDistO;
+}
+
 function take_physics_step(fx, fy, tau) {
     // fx, fy, tau are scalars, pass by value
 
@@ -358,9 +379,11 @@ function take_physics_step(fx, fy, tau) {
       let floor_height = floor_h;
       for (let j = 0; j < bone_segments.length; j++) {
         let segment = bone_segments[j];
+        let dist = distanceO(segment.e[1]);
   
         // Check if the end points of the segment cross the ground plane
-        if (segment.e[1] > floor_height) {
+        if (dist <= 0.1) {
+        // if (segment.e[1] > floor_height) {
           // Apply a penalty force to simulate a spring force
           let penetration = segment.e[1] - floor_height;
           let spring_force = 1000.0 * penetration; // Adjust the spring constant as needed
@@ -837,14 +860,14 @@ function mouseDragged() {
  * @param {2-array} p 2D position to query SDF at.
  * @return {number,object} [d,o] Distance, d, to closest obstacle, o.
  */
-function distanceO(p, obstacles) {
-  let result = [Infinity, this];
-  for (let i = 0; i < obstacles.length; i++) {
-    let cur = obstacles[i].distanceO(p);
-    result = SDF.opUnion(result, cur);
-  }
-  return result;
-}
+// function distanceO(p, obstacles) {
+//   let result = [Infinity, this];
+//   for (let i = 0; i < obstacles.length; i++) {
+//     let cur = obstacles[i].distanceO(p);
+//     result = SDF.opUnion(result, cur);
+//   }
+//   return result;
+// }
 
 function normalize(v) {
   let v_mag = math.norm(v);
@@ -856,12 +879,13 @@ function normalize(v) {
 
 function collisionCheck(p_vec, obstacles) {
   // Get the signed distance to the nearest obstacle.
-  let distO = distanceO(p_vec, obstacles);
+  let distO = distanceO(p_vec);
   let obstacle = distO[1];
 
   let particle_radius = 0.1; // should we instead assume 0 radius?
   let d = distO[0] - particle_radius;
-  let n = normalize(obstacle.normal(p_vec));
+  let nvec = (obstacle.normal(createVector(p_vec[0], p_vec[1]))).normalize();
+  let n = [nvec.x, nvec.y];
   let particlePenetrationDepth = 0;
 
   if (d < 0) {
