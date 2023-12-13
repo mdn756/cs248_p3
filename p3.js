@@ -216,19 +216,17 @@ function get_init_CoM_xy(return_total_mass) {
   // replace this with your code
   let CoM = [0.0, 0.0];
 	let total_mass = 0.0;
-	for (let bone of bone_segments) {
-		let scalar = bone.get_length() * bone.get_mass();
-		let midpoint = bone.get_global_com_xy();
-		let product = math.multiply(scalar, midpoint);
-		CoM = math.add(CoM, product);
-		total_mass += bone.get_mass();
-	}
-	let total_mass_factor = 1.0 / total_mass;
-	CoM = math.multiply(total_mass_factor, CoM);
-	// Sum Length * mass * COM of each rod
-	// Divide it by the total mass of the rods
-  // STUDENT CODE END
-  // STUDENT CODE END
+	for (let i = 0; i < bone_segments.length; i++) {
+    let segment = bone_segments[i];
+    let segment_CoM = segment.get_global_com_xy();
+    total_mass += segment.m;
+    CoM[0] += segment.m * segment_CoM[0];
+    CoM[1] += segment.m * segment_CoM[1];
+  }
+	//normalize
+  CoM[0] /= total_mass;
+  CoM[1] /= total_mass;
+
 
   if (return_total_mass) {
     return [CoM, total_mass];
@@ -246,17 +244,13 @@ function get_moment_of_inertia_around_CoM(com) {
   // replace this with your code
 
   let I_total = 0.0;
-	// Get individual inertias
-	// Parallel Axis Theorem around CoM
-	// Add their inertias
-	for (let bone of bone_segments) {
-		let d = math.norm(math.subtract(bone.get_global_com_xy(), com));
-		let d_square = d * d;
-		let inertia = d_square + bone.get_inertia();
-		I_total += inertia;
-	}
-  // STUDENT CODE END
 
+  for (let i = 0; i < bone_segments.length; i++) {
+    let segment = bone_segments[i];
+    let segment_CoM = segment.get_global_com_xy();
+    let r_squared = Math.pow(segment_CoM[0] - com[0], 2) + Math.pow(segment_CoM[1] - com[1], 2);
+    I_total += segment.I_com + segment.m * r_squared;
+  }
   return I_total;
 }
 
@@ -347,48 +341,66 @@ function distanceO(p) {
 }
 
 function take_physics_step(fx, fy, tau) {
-  // fx, fy, tau are scalars, pass by value
+    // fx, fy, tau are scalars, pass by value
 
-  let substep = 10;
-  let dt = 1.0 / (substep * FRAMERATE);
-
-  for (let i = 0; i < substep; i++) {
-    // TODO: STUDENT CODE BEGIN
-
-    // run one step of rigid-body simulation
-    // fx, fy, tau are external forces and torque (i.e. gravity) excluding collision
-    // add your collision forces to fx, fy, tau
-    // then integrate the equations of motion
-		// let floor_y = windowHeight * 0.5 + (100.0*(h+0.1));
-		for (let i = 0; i < collision_candidates.length(); i++){
-			let p = collision_candidates.get_p(i);
-			// Check if close to floor
-      let dist = distanceO(p);
-			if (dist[0] <= 0.1) {
-        print("dist: "+dist)
-        // if (p[1] >= (floor_h - 0.05)) {
-				// Find penalty force
-				let last_p = last_timestep_positions.get_p(i);
-				fx += -0.01*(p[0]-last_p[0]);
-				fy += -10.0*(p[1]-0.05);
-				// Find torque
-				let p_three = [p[0], p[1], 0.0];
-				let com_xy = [CoM_xya[0], CoM_xya[1], 0.0];
-				let fk = [fx, fy, 0.0];
-				let moment_arm = math.subtract(com_xy, p_three);
-				// Cross product force and moment arm to get torque
-				let tau_k = math.norm(math.cross(fk, moment_arm));
-				// Damping the torque
-				tau += (tau_k * 0.1);
-			}
-		}
-		
-		let a = [fx/total_mass, fy/total_mass, tau/I];
-		// update d_CoM_xya -- the velocity using the acceleration
-		d_CoM_xya = math.add(d_CoM_xya, math.multiply(dt, a));
-    // STUDENT CODE END
-
-    CoM_xya = math.add(CoM_xya, math.multiply(dt, d_CoM_xya));
+    let substep = 10;
+    let dt = 1.0 / (substep * FRAMERATE);
+  
+    for (let i = 0; i < substep; i++) {
+      // TODO: STUDENT CODE BEGIN
+  
+      // Add your collision forces to fx, fy, tau here (not implemented in this example)
+  
+      // External forces and torques (gravity in this example)
+      let external_force = [fx, fy];
+      let external_torque = tau;
+  
+      // Update linear and angular velocities
+      d_CoM_xya[0] += dt * (external_force[0] / total_mass); // Update linear velocity in x
+      d_CoM_xya[1] += dt * (external_force[1] / total_mass); // Update linear velocity in y
+      d_CoM_xya[2] += dt * (external_torque / I); // Update angular velocity
+  
+      // Update position and orientation using Euler integration
+      CoM_xya[0] += dt * d_CoM_xya[0]; // Update x position
+      CoM_xya[1] += dt * d_CoM_xya[1]; // Update y position
+      CoM_xya[2] += dt * d_CoM_xya[2]; // Update rotation
+  
+      let floor_height = floor_h;
+      for (let j = 0; j < bone_segments.length; j++) {
+        let segment = bone_segments[j];
+  
+        // Check if the end points of the segment cross the ground plane
+        if (segment.e[1] > floor_height) {
+          // Apply a penalty force to simulate a spring force
+          let penetration = segment.e[1] - floor_height;
+          let spring_force = 1000.0 * penetration; // Adjust the spring constant as needed
+  
+          // Update linear velocity in y for the segment's CoM
+          d_CoM_xya[1] -= dt * (spring_force / total_mass);
+          // Calculate lever arm (distance from CoM to the line of action of the force)
+      let lever_arm = segment.get_global_com_xy()[0] - CoM_xya[0];
+  
+      // Calculate torque
+      let torque = spring_force * lever_arm;
+  
+      // Update angular velocity
+      d_CoM_xya[2] -= dt * (torque / I);
+        }
+  
+        if (segment.s[1] > floor_height) {
+          let penetration = segment.s[1] - floor_height;
+          let spring_force = 1000.0 * penetration;
+          d_CoM_xya[1] -= dt * (spring_force / total_mass);
+          // Calculate lever arm (distance from CoM to the line of action of the force)
+      let lever_arm = segment.get_global_com_xy()[0] - CoM_xya[0];
+  
+      // Calculate torque
+      let torque = spring_force * lever_arm;
+  
+      // Update angular velocity
+      d_CoM_xya[2] -= dt * (torque / I);
+        }
+      }
 
     set_q_from_phys_state(dt);
   }
