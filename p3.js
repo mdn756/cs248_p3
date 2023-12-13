@@ -164,8 +164,19 @@ function reset_targets() {
   }
 }
 
-
+function clamp_joints(q) {
+  let shoulder = [-Math.PI/2, Math.PI/2];
+  let elbow = [-Math.PI/2,Math.PI/2];
+  let hip = [-20*Math.PI/180, 110*Math.PI/180];
+  let knee = [0,5/6*Math.PI];
+  let bot_values = [0,0,0,shoulder[0],elbow[0],shoulder[0],elbow[0],hip[0],-knee[1],-hip[1],knee[0]];
+  let top_values = [0,0,0,shoulder[1],elbow[1],shoulder[1],elbow[1],hip[1],knee[0],hip[0],knee[1]];
+  for (let i = 3; i < q.length; i++) { // Assuming indexing starts from 0
+    q[i] = clamp(q[i], bot_values[i], top_values[i]);
+  }
+}
 function set_joint_positions(q, dt) {
+  clamp_joints(q);
   for (let i = 0; i < q.length; i++) {
     let q_i = q[i];
     let jnt_i = dof_list[i];
@@ -859,3 +870,6 @@ function collisionCheck(p_vec, obstacles) {
   return [particlePenetrationDepth, n];
 }
 
+function clamp(n, low, high) {
+	return constrain(n, low, high);
+}
